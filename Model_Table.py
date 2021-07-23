@@ -217,12 +217,18 @@ class TableModel(QAbstractTableModel):
 
     def insertRows(self, position, rows=1, text=None, index=QModelIndex()):
         self.beginInsertRows(QModelIndex(), 0, 0)
-        new_row = {'start_date': date.today().strftime("%Y-%m-%d"), 'id': numpy.max(self._data["id"].values) + 1,
-                   'Name': text[0], 'import': float(text[1].replace(",", ".")), 'Description': text[3],
+        if len(self._data["id"].values) > 0:
+            max_id = numpy.max(self._data["id"].values) + 1
+        else:
+            max_id = 0
+        new_row = {'start_date': date.today().strftime("%Y-%m-%d"), 'id': max_id,
+                   'Name': text[0], 'import': int(format(text[1])), 'Description': text[3],
                    'checked': int(0),
                    'checked_date': '-', 'finish_date': text[2]}
+
         self._data = self._data.append(new_row, ignore_index=True)
         self.row_count = self.row_count + 1
+        self.checked = self._data["checked"].values
         self.endInsertRows()
         self.window.setLabelValue()
         return True

@@ -48,8 +48,9 @@ class Ui_Dialog_add(QtWidgets.QDialog):
         self.label.setText("Data di scadenza*")
         self.gridLayout.addWidget(self.label, 2, 0, 1, 1)
         self.dateEdit = QtWidgets.QDateEdit(self.widget)
+        self.dateEdit.setDisplayFormat("d/MM/yyyy")
         self.dateEdit.setObjectName("dateEdit")
-        self.dateEdit.setDate(QtCore.QDate.fromString(date.today().strftime("%d/%m/%Y"), 'd/M/yyyy'))
+        self.dateEdit.setDate(QtCore.QDate.fromString(date.today().strftime("%d/%m/%Y"), 'd/MM/yyyy'))
         self.gridLayout.addWidget(self.dateEdit, 2, 1, 1, 1)
 
         self.widget1 = QtWidgets.QWidget(self)

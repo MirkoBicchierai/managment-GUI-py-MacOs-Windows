@@ -19,3 +19,6 @@ class UILogin(object):
         self.btn.setObjectName("pushButton")
         self.btn.setText("Login")
         self.horizontalLayout.addWidget(self.btn)
+
+        self.btn.setAutoDefault(True)
+        self.lineEdit.returnPressed.connect(self.btn.click)

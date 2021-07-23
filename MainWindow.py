@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
         self.uiToolTab.setupUI(self, (pd.read_csv("data.csv")).sort_values(by=["start_date"], ascending=[False]))
         self.show()
         self.setFixedWidth(1024)
-        self.setFixedHeight(640)
+        self.setFixedHeight(625)
 
     def startLoginWindow(self):
         self.uiWindow.setupUI(self)
@@ -60,11 +60,12 @@ class MainWindow(QMainWindow):
         self.setFixedHeight(150)
 
     def check_password(self):
-        if "Nexal123" == self.uiWindow.lineEdit.text():
+        if "jklmnbh" == self.uiWindow.lineEdit.text():
             decrypt("data.csv", "cZP5YldvWyV8HOFDevOM0_K9l7T-90d-RyWHAvL89KY=")
             self.startPrimaryToolTab()
             self.status = 1
-            self.statusBar().showMessage("data loaded")
+            self.statusBar().showMessage("")
+            self.statusBar().hide()
         else:
             self.count = self.count + 1
             self.statusBar().showMessage("Login : " + str(self.count))

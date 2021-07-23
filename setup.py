@@ -2,7 +2,7 @@ from setuptools import setup
 
 APP = ['main.py']
 PKGS = ['pandas', 'cryptography']
-OPTIONS = {'iconfile': '64.png', 'argv_emulation': True, 'includes': ['cryptography.fernet', '_cffi_backend'], 'packages': ['pandas'] }
+OPTIONS = {'iconfile': '64.png', 'argv_emulation': False, 'includes': ['cryptography.fernet', '_cffi_backend'], 'packages': ['pandas'] }
 DATA_FILES = ['theme.stylesheet', 'data.csv']
 
 setup(
