@@ -9,6 +9,12 @@ from Model_Table import TableModel
 from QSortFilterProxyModel_custom import QSortFilterProxyModel_custom
 
 
+class IconDelegate(QtWidgets.QStyledItemDelegate):
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        option.decorationSize = option.rect.size()
+
+
 class UIPrimary(object):
 
     def setupUI(self, main_window, data):
@@ -24,6 +30,8 @@ class UIPrimary(object):
         self.central_widget.resize(1024, 640)
 
         self.table = QtWidgets.QTableView(self.central_widget)
+        delegate = IconDelegate(self.table)
+        self.table.setItemDelegate(delegate)
         self.table.horizontal_header = self.table.horizontalHeader()
         self.table.vertical_header = self.table.verticalHeader()
         self.table.horizontal_header.setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -121,10 +129,10 @@ class UIPrimary(object):
             self.model.insertRows(0, 1, [ui.lineEdit.text(), ui.doubleSpinBox.text(),
                                          new_date[2] + "-" + new_date[1] + "-" + new_date[0],
                                          ui.plainTextEdit.toPlainText()])
-            self.model.sort(0, Qt.DescendingOrder)
+            self.model.sort(1, Qt.DescendingOrder)
 
     def deleteI(self, item):
-        if item.column() == 8:
+        if item.column() == 9:
             dialog = QtWidgets.QDialog(self.main)
             ui = Ui_Dialog_delete()
             ui.setupUi(dialog)
@@ -139,6 +147,22 @@ class UIPrimary(object):
             if dialog.exec_() == QtWidgets.QDialog.Accepted:
                 if k != -1:
                     self.model.removeRow(k)
+
+        if item.column() == 8:
+            data = self.model.getDataFrame()
+            k = -1
+            data_f = -1
+            for i in range(len(data["id"].values)):
+                if str(self.table.model().data(self.table.model().index(item.row(), 1))) == str(data["id"].values[i]):
+                    k = i
+                    data_f = data["finish_date"].values[i]
+
+            if k != -1:
+                self.model.insertRows(0, 1, [str(self.table.model().data(self.table.model().index(item.row(), 3))), str(self.table.model().data(self.table.model().index(item.row(), 4))),
+                                             str(data_f),
+                                             str(self.table.model().data(self.table.model().index(item.row(), 7)))])
+                self.model.sort(1, Qt.DescendingOrder)
+
 
     def range_import(self):
         ui = Ui_Dialog_import_box(self.main, self.model.getDataFrame())
@@ -162,7 +186,7 @@ class UIPrimary(object):
                 negative += self.data["import"].values[i]
             else:
                 positive += self.data["import"].values[i]
-        self.importN.setText(str(positive-(negative*-1)) + "€")
+        self.importN.setText(str(positive - (negative * -1)) + "€")
         self.importE.setText("+" + str(positive) + "€")
         self.importU.setText("-" + str(abs(negative)) + "€")
 

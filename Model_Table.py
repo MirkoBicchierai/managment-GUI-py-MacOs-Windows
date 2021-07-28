@@ -1,7 +1,7 @@
 import numpy
 from PyQt5.QtCore import (Qt, QAbstractTableModel, QVariant, QModelIndex)
-from PyQt5 import QtCore
-from PyQt5.QtGui import QColor
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtGui import QColor, QIcon
 from datetime import date
 
 
@@ -9,18 +9,20 @@ class TableModel(QAbstractTableModel):
 
     def __init__(self, data, window):
         super(TableModel, self).__init__()
-        self._data = data
+        column_names = ["start_date", "id", "finish_date", "Name", "import", "checked", "checked_date", "Description"]
+        self._data = data.reindex(columns=column_names)
         self.checked = data["checked"].values
-        self.column_count = 9
+        self.column_count = 10
         self.row_count = len(self._data["id"].values)
         self.window = window
+
 
     def headerData(self, section, orientation, role):
         if role != Qt.DisplayRole:
             return None
         if orientation == Qt.Horizontal:
             return ("Data", "id", "Data Scadenza", "Attività", "Prezzo", "", "Data Pagamento", "Descrizione"
-                    , "")[
+                    , "", "")[
                 section]
         else:
             return "{}".format(section)
@@ -39,15 +41,24 @@ class TableModel(QAbstractTableModel):
             return Qt.AlignCenter
 
         if role == Qt.BackgroundRole:
-            if col == 8:
+
+            if col == 9:
                 return QColor(255, 71, 26)
+
+        if col == 8 and role == Qt.DecorationRole:
+            return QIcon("copy.png")
+
         if role == Qt.DisplayRole or role == Qt.EditRole:
+
             if col == 0:
                 return QtCore.QDate.fromString(self._data["start_date"].values[row], 'yyyy-M-d')
+
             if col == 1:
                 return "{}".format(self._data["id"].values[row])
+
             if col == 2:
                 return QtCore.QDate.fromString(self._data["finish_date"].values[row], 'yyyy-M-d')
+
             if col == 3:
                 return self._data["Name"].values[row]
 
@@ -65,7 +76,8 @@ class TableModel(QAbstractTableModel):
 
             if col == 7:
                 return self._data["Description"].values[row]
-            if col == 8:
+
+            if col == 9:
                 return "X"
 
         elif role == Qt.CheckStateRole:
@@ -97,7 +109,7 @@ class TableModel(QAbstractTableModel):
                         self.setData(self.index(row, 6), -1, Qt.EditRole)
                     else:
                         self.setData(self.index(row, 6), -2, Qt.EditRole)
-            self.dataChanged.emit(self.index(row,col+1), index, [Qt.EditRole])
+            self.dataChanged.emit(self.index(row, col + 1), index, [Qt.EditRole])
 
         if role == Qt.EditRole:
             row = index.row()
@@ -153,22 +165,24 @@ class TableModel(QAbstractTableModel):
             self._data.sort_values('id', ascending=order == Qt.AscendingOrder, inplace=True)
             self._data.reset_index(inplace=True, drop=True)  # <-- this is the change
         if column == 2:
-            self._data.sort_values('Name', ascending=order == Qt.AscendingOrder, inplace=True)
-            self._data.reset_index(inplace=True, drop=True)  # <-- this is the change
-        if column == 3:
-            self._data.sort_values('import', ascending=order == Qt.AscendingOrder, inplace=True)
-            self._data.reset_index(inplace=True, drop=True)  # <-- this is the change
-        if column == 4:
-            self._data.sort_values('checked_date', ascending=order == Qt.AscendingOrder, inplace=True)
-            self._data.reset_index(inplace=True, drop=True)  # <-- this is the change
-        if column == 5:
-            self._data.sort_values('checked_date', ascending=order == Qt.AscendingOrder, inplace=True)
-            self._data.reset_index(inplace=True, drop=True)  # <-- this is the change
-        if column == 6:
             self._data.sort_values('finish_date', ascending=order == Qt.AscendingOrder, inplace=True)
             self._data.reset_index(inplace=True, drop=True)  # <-- this is the change
+        if column == 3:
+            self._data.sort_values('Name', key=lambda col: col.str.lower(), ascending=order == Qt.AscendingOrder,
+                                   inplace=True)
+            self._data.reset_index(inplace=True, drop=True)  # <-- this is the change
+        if column == 4:
+            self._data.sort_values('import', ascending=order == Qt.AscendingOrder, inplace=True)
+            self._data.reset_index(inplace=True, drop=True)  # <-- this is the change
+        if column == 5:
+            self._data.sort_values('checked', ascending=order == Qt.AscendingOrder, inplace=True)
+            self._data.reset_index(inplace=True, drop=True)  # <-- this is the change
+        if column == 6:
+            self._data.sort_values('checked_date', ascending=order == Qt.AscendingOrder, inplace=True)
+            self._data.reset_index(inplace=True, drop=True)  # <-- this is the change
         if column == 7:
-            self._data.sort_values('Description', ascending=order == Qt.AscendingOrder, inplace=True)
+            self._data.sort_values('Description', key=lambda col: col.str.lower(), ascending=order == Qt.AscendingOrder,
+                                   inplace=True)
             self._data.reset_index(inplace=True, drop=True)  # <-- this is the change
         self.layoutChanged.emit()
 
@@ -186,6 +200,8 @@ class TableModel(QAbstractTableModel):
         if index.column() == 7:
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
         if index.column() == 8:
+            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        if index.column() == 9:
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
         else:
             return Qt.ItemFlags(QAbstractTableModel.flags(self, index) | Qt.ItemIsEnabled | Qt.ItemIsSelectable)
@@ -221,6 +237,7 @@ class TableModel(QAbstractTableModel):
             max_id = numpy.max(self._data["id"].values) + 1
         else:
             max_id = 0
+
         new_row = {'start_date': date.today().strftime("%Y-%m-%d"), 'id': max_id,
                    'Name': text[0], 'import': int(format(text[1])), 'Description': text[3],
                    'checked': int(0),
